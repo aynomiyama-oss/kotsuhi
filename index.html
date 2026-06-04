@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>交通費管理</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; }
+  .container { max-width: 760px; margin: 0 auto; padding: 1.5rem 1rem; }
+  h1 { font-size: 18px; font-weight: 500; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px; }
+  .card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  label { font-size: 13px; color: #666; }
+  input, select { width: 100%; padding: 8px 10px; border: 0.5px solid rgba(0,0,0,0.2); border-radius: 8px; font-size: 14px; background: #fff; color: #1a1a1a; }
+  input:focus, select:focus { outline: none; border-color: rgba(0,0,0,0.4); }
+  .form-row2 { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: end; margin-bottom: 10px; }
+  .arrow-icon { padding-bottom: 6px; color: #999; font-size: 18px; text-align: center; }
+  .yahoo-btn { display: none; width: 100%; margin-bottom: 12px; padding: 7px 0; font-size: 13px; border-radius: 8px; cursor: pointer; border: 0.5px solid #3b82f6; background: #eff6ff; color: #1d4ed8; font-weight: 500; }
+  .yahoo-btn.visible { display: block; }
+  .fare-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .fare-display { background: #f5f5f0; border-radius: 8px; padding: 8px 12px; font-size: 15px; font-weight: 500; min-height: 36px; display: flex; align-items: center; }
+  .section-title { font-size: 14px; font-weight: 500; color: #666; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .btn-primary { background: #1a1a1a; color: #fff; border: none; border-radius: 8px; padding: 8px 20px; font-size: 14px; cursor: pointer; font-weight: 500; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-sm { font-size: 13px; padding: 5px 12px; border-radius: 8px; cursor: pointer; border: 0.5px solid rgba(0,0,0,0.2); background: transparent; color: #1a1a1a; }
+  .btn-sm:hover { background: #f5f5f0; }
+  .btn-danger { color: #dc2626; border-color: #fca5a5; }
+  .btn-danger:hover { background: #fef2f2; }
+  .btn-success { background: #f0fdf4; color: #15803d; border: 0.5px solid #86efac; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer; font-weight: 500; }
+  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .summary-bar { display: flex; gap: 12px; margin-bottom: 1rem; }
+  .summary-card { flex: 1; background: #f5f5f0; border-radius: 8px; padding: 10px 14px; }
+  .summary-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+  .summary-value { font-size: 20px; font-weight: 500; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; color: #666; border-bottom: 0.5px solid rgba(0,0,0,0.1); font-weight: 400; white-space: nowrap; }
+  td { padding: 8px 10px; border-bottom: 0.5px solid rgba(0,0,0,0.08); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; background: #eff6ff; color: #1d4ed8; }
+  .empty-msg { text-align: center; padding: 2rem; color: #999; font-size: 13px; }
+  .alert { border-radius: 8px; padding: 8px 14px; font-size: 13px; margin-bottom: 12px; display: none; }
+  .excel-area { border: 1px dashed rgba(0,0,0,0.2); border-radius: 8px; padding: 1.25rem; text-align: center; cursor: pointer; margin-bottom: 12px; color: #666; font-size: 13px; }
+  .excel-area:hover { background: #f5f5f0; }
+  .excel-preview { display: none; margin-top: 12px; }
+  .import-bar { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+  .tabs { display: flex; margin-bottom: 1.25rem; border-bottom: 0.5px solid rgba(0,0,0,0.1); }
+  .tab { font-size: 13px; padding: 8px 16px; cursor: pointer; color: #666; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; font-weight: 500; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .check-col { width: 32px; text-align: center; }
+  .login-box { text-align: center; padding: 2rem; }
+  .login-box p { font-size: 13px; color: #666; margin-bottom: 16px; line-height: 1.7; }
+  .btn-google { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 0.5px solid rgba(0,0,0,0.2); border-radius: 8px; padding: 10px 24px; font-size: 14px; cursor: pointer; font-weight: 500; }
+  .btn-google:hover { background: #f5f5f0; }
+  .status-bar { font-size: 12px; color: #666; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #dc2626; display: inline-block; }
+  .status-dot.connected { background: #22c55e; }
+  @media (max-width: 480px) {
+    .fare-row { grid-template-columns: 1fr 1fr; }
+    .summary-bar { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1><i class="ti ti-train"></i> 交通費管理</h1>
+
+  <div class="card" id="login-card">
+    <div class="login-box">
+      <p>Googleアカウントでログインすると<br>スプレッドシートに自動保存されます。</p>
+      <button class="btn-google" onclick="signIn()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-3.58-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Googleでログイン
+      </button>
+    </div>
+  </div>
+
+  <div id="main-app" style="display:none">
+    <div class="status-bar">
+      <span class="status-dot connected"></span>
+      <span id="status-text">Googleスプレッドシートに接続済み</span>
+      <button class="btn-sm" style="margin-left:auto;font-size:12px" onclick="signOut()">ログアウト</button>
+    </div>
+
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('manual')"><i class="ti ti-edit" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i>手入力</div>
+        <div class="tab" onclick="switchTab('excel')"><i class="ti ti-file-spreadsheet" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i>審査費用確認書から取り込み</div>
+      </div>
+
+      <div id="tab-manual" class="tab-content active">
+        <div id="alert" class="alert"></div>
+        <div style="margin-bottom:10px">
+          <div class="form-group">
+            <label>日付</label>
+            <input type="date" id="travel-date" oninput="updateYahooBtn()">
+          </div>
+        </div>
+        <div class="form-row2">
+          <div class="form-group">
+            <label>出発地</label>
+            <input type="text" id="from-station" placeholder="例: 博多駅" oninput="updateYahooBtn()">
+          </div>
+          <div class="arrow-icon"><i class="ti ti-arrow-right"></i></div>
+          <div class="form-group">
+            <label>目的地</label>
+            <input type="text" id="to-station" placeholder="例: 天神" oninput="updateYahooBtn()">
+          </div>
+        </div>
+        <button class="yahoo-btn" id="yahoo-btn" onclick="openYahoo()">
+          <i class="ti ti-external-link" style="font-size:14px;vertical-align:-2px;margin-right:6px"></i>Yahoo!路線で運賃を確認する →
+        </button>
+        <div class="fare-row">
+          <div class="form-group">
+            <label>交通手段</label>
+            <select id="transport">
+              <option value="電車">電車</option>
+              <option value="バス">バス</option>
+              <option value="新幹線">新幹線</option>
+              <option value="タクシー">タクシー</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>運賃（片道・円）</label>
+            <input type="number" id="fare-input" placeholder="確認後ここに入力" min="0" oninput="updateTotal()">
+          </div>
+          <div class="form-group">
+            <label>往復</label>
+            <select id="roundtrip" onchange="updateTotal()">
+              <option value="1">片道</option>
+              <option value="2">往復</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div class="form-group">
+            <label>業務内容</label>
+            <select id="purpose-sel" onchange="toggleOther()">
+              <option value="エコアクション21審査" selected>エコアクション21審査</option>
+              <option value="㈱Miraile業務委託">㈱Miraile業務委託</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+          <div class="form-group" id="other-group" style="display:none">
+            <label>内容を入力</label>
+            <input type="text" id="purpose-other" placeholder="業務内容を入力">
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:12px;">
+          <div class="form-group">
+            <label>合計金額</label>
+            <div class="fare-display" id="fare-total">—</div>
+          </div>
+          <button class="btn-primary" onclick="addRecord()">
+            <i class="ti ti-plus" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>追加する
+          </button>
+        </div>
+      </div>
+
+      <div id="tab-excel" class="tab-content">
+        <div id="alert2" class="alert"></div>
+        <p style="font-size:13px;color:#666;margin-bottom:12px">「審査費用等確認書」のExcelをアップロードすると交通費を自動で読み取ります。</p>
+        <div class="excel-area" onclick="document.getElementById('excel-file').click()">
+          <i class="ti ti-upload" style="font-size:24px;display:block;margin-bottom:6px"></i>
+          クリックしてExcelを選択（.xls / .xlsx）
+          <input type="file" id="excel-file" accept=".xls,.xlsx" style="display:none" onchange="readExcel(this)">
+        </div>
+        <div class="excel-preview" id="excel-preview">
+          <div style="font-size:13px;font-weight:500;margin-bottom:8px;color:#666">読み取った交通費 — チェックして取り込む</div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th class="check-col"><input type="checkbox" id="check-all" onchange="toggleAll(this)" checked></th>
+                  <th>出発日</th><th>出発地</th><th>目的地</th><th>片道/往復</th><th>金額</th><th>目的</th>
+                </tr>
+              </thead>
+              <tbody id="excel-tbody"></tbody>
+            </table>
+          </div>
+          <div class="import-bar">
+            <button class="btn-sm" onclick="clearExcel()">クリア</button>
+            <button class="btn-success" onclick="importSelected()">
+              <i class="ti ti-download" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i>選択した行を追加
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="top-bar">
+        <div class="section-title" style="margin:0"><i class="ti ti-list"></i> 記録一覧</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sm" onclick="loadFromSheets()"><i class="ti ti-refresh" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i>再読み込み</button>
+          <button class="btn-sm" onclick="exportCSV()"><i class="ti ti-download" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i>freee用CSV</button>
+        </div>
+      </div>
+      <div class="summary-bar" id="summary-bar" style="display:none">
+        <div class="summary-card"><div class="summary-label">合計件数</div><div class="summary-value" id="count-val">0件</div></div>
+        <div class="summary-card"><div class="summary-label">合計交通費</div><div class="summary-value" id="total-val">¥0</div></div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>日付</th><th>出発→目的地</th><th>業務内容</th><th>交通手段</th><th>金額</th><th></th></tr></thead>
+            <tbody id="records-body"><tr><td colspan="6" class="empty-msg">ログインすると記録が表示されます</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const CLIENT_ID = '417033204590-91gvm90hdcdctnigd94emq53r9j9gvju.apps.googleusercontent.com';
+const SHEET_ID = '1PuF4JunAsjomglIeaivjcC80UbD4aD4DbTpbjI79ikE';
+const SHEET_NAME = '交通費';
+const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+
+let accessToken = null;
+let records = [];
+let excelRows = [];
+let tokenClient = null;
+
+document.getElementById('travel-date').value = new Date().toISOString().split('T')[0];
+
+window.onload = () => {
+  const interval = setInterval(() => {
+    if (typeof google !== 'undefined' && google.accounts) {
+      clearInterval(interval);
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: async (resp) => {
+          if (resp.error) { showAlert('alert', 'ログインに失敗しました: ' + resp.error, 'error'); return; }
+          accessToken = resp.access_token;
+          document.getElementById('login-card').style.display = 'none';
+          document.getElementById('main-app').style.display = 'block';
+          await ensureSheet();
+          await loadFromSheets();
+        }
+      });
+    }
+  }, 300);
+};
+
+function signIn() {
+  if (tokenClient) tokenClient.requestAccessToken();
+  else alert('Googleの読み込みが完了していません。少し待ってから再度お試しください。');
+}
+
+function signOut() {
+  if (accessToken) google.accounts.oauth2.revoke(accessToken);
+  accessToken = null;
+  document.getElementById('login-card').style.display = 'block';
+  document.getElementById('main-app').style.display = 'none';
+  records = [];
+  renderTable();
+}
+
+async function sheetsRequest(method, path, body) {
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}${path}`, {
+    method,
+    headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  return res.json();
+}
+
+async function ensureSheet() {
+  const info = await sheetsRequest('GET', '');
+  const exists = info.sheets && info.sheets.some(s => s.properties.title === SHEET_NAME);
+  if (!exists) {
+    await sheetsRequest('POST', ':batchUpdate', { requests: [{ addSheet: { properties: { title: SHEET_NAME } } }] });
+    await sheetsRequest('PUT', `/values/${SHEET_NAME}!A1:G1?valueInputOption=RAW`, {
+      values: [['日付','出発地','目的地','業務内容','交通手段','運賃(片道)','合計金額']]
+    });
+  }
+}
+
+async function loadFromSheets() {
+  document.getElementById('status-text').textContent = '読み込み中...';
+  const data = await sheetsRequest('GET', `/values/${SHEET_NAME}!A2:G1000`);
+  const rows = data.values || [];
+  records = rows.map((r, i) => ({ id: i, date: r[0]||'', from: r[1]||'', to: r[2]||'', purpose: r[3]||'', transport: r[4]||'', fare: parseInt(r[5])||0, rt: 1, total: parseInt(r[6])||0 }));
+  renderTable();
+  document.getElementById('status-text').textContent = 'Googleスプレッドシートに接続済み';
+}
+
+async function saveToSheets(rec) {
+  await sheetsRequest('POST', `/values/${SHEET_NAME}!A1:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`, {
+    values: [[rec.date, rec.from, rec.to, rec.purpose, rec.transport, rec.fare, rec.total]]
+  });
+}
+
+async function deleteFromSheets(rowIndex) {
+  const info = await sheetsRequest('GET', '');
+  const sheet = info.sheets.find(s => s.properties.title === SHEET_NAME);
+  const sheetId = sheet ? sheet.properties.sheetId : 0;
+  await sheetsRequest('POST', ':batchUpdate', {
+    requests: [{ deleteDimension: { range: { sheetId, dimension: 'ROWS', startIndex: rowIndex + 1, endIndex: rowIndex + 2 } } }]
+  });
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['manual','excel'][i] === name));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function toggleOther() {
+  document.getElementById('other-group').style.display = document.getElementById('purpose-sel').value === 'その他' ? 'block' : 'none';
+}
+
+function updateYahooBtn() {
+  const from = document.getElementById('from-station').value.trim();
+  const to = document.getElementById('to-station').value.trim();
+  const date = document.getElementById('travel-date').value;
+  document.getElementById('yahoo-btn').classList.toggle('visible', !!(from && to && date));
+}
+
+function openYahoo() {
+  const from = encodeURIComponent(document.getElementById('from-station').value.trim());
+  const to = encodeURIComponent(document.getElementById('to-station').value.trim());
+  const [year, month, day] = document.getElementById('travel-date').value.split('-');
+  window.open(`https://transit.yahoo.co.jp/search/result?from=${from}&to=${to}&y=${year}&m=${month}&d=${day}&hh=09&m1=0&m2=0&type=1&ws=2&s=0&expkind=1&cl=1`, '_blank');
+}
+
+function updateTotal() {
+  const fare = parseInt(document.getElementById('fare-input').value) || 0;
+  const rt = parseInt(document.getElementById('roundtrip').value);
+  document.getElementById('fare-total').textContent = fare > 0 ? '¥' + (fare * rt).toLocaleString() : '—';
+}
+
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.background = type === 'error' ? '#fef2f2' : '#f0fdf4';
+  el.style.color = type === 'error' ? '#dc2626' : '#15803d';
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3500);
+}
+
+function getPurpose() {
+  const sel = document.getElementById('purpose-sel').value;
+  return sel === 'その他' ? (document.getElementById('purpose-other').value.trim() || 'その他') : sel;
+}
+
+async function addRecord() {
+  const date = document.getElementById('travel-date').value;
+  const from = document.getElementById('from-station').value.trim();
+  const to = document.getElementById('to-station').value.trim();
+  const purpose = getPurpose();
+  const transport = document.getElementById('transport').value;
+  const fareInput = parseInt(document.getElementById('fare-input').value);
+  const rt = parseInt(document.getElementById('roundtrip').value);
+  if (!date || !from || !to || !fareInput) { showAlert('alert','日付・出発地・目的地・運賃は必須です','error'); return; }
+  const rec = { date, from, to, purpose, transport, fare: fareInput, rt, total: fareInput * rt };
+  showAlert('alert','保存中...','success');
+  await saveToSheets(rec);
+  await loadFromSheets();
+  showAlert('alert','スプレッドシートに保存しました！','success');
+  ['from-station','to-station','fare-input'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('purpose-sel').value = 'エコアクション21審査';
+  document.getElementById('other-group').style.display = 'none';
+  document.getElementById('travel-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('roundtrip').value = '1';
+  document.getElementById('fare-total').textContent = '—';
+  document.getElementById('yahoo-btn').classList.remove('visible');
+}
+
+async function deleteRecord(rowIndex) {
+  if (!confirm('この記録を削除しますか？')) return;
+  await deleteFromSheets(rowIndex);
+  await loadFromSheets();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('records-body');
+  const sb = document.getElementById('summary-bar');
+  if (!records.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">まだ記録がありません</td></tr>'; sb.style.display = 'none'; return; }
+  sb.style.display = 'flex';
+  document.getElementById('count-val').textContent = records.length + '件';
+  document.getElementById('total-val').textContent = '¥' + records.reduce((s,r) => s+r.total, 0).toLocaleString();
+  tbody.innerHTML = [...records].reverse().map((r,i) => `<tr>
+    <td style="white-space:nowrap">${r.date}</td>
+    <td>${r.from} → ${r.to}</td>
+    <td style="color:#666">${r.purpose}</td>
+    <td>${r.transport}</td>
+    <td style="font-weight:500">¥${r.total.toLocaleString()}</td>
+    <td><button class="btn-sm btn-danger" onclick="deleteRecord(${records.length-1-i})"><i class="ti ti-trash" style="font-size:14px;vertical-align:-2px"></i></button></td>
+  </tr>`).join('');
+}
+
+function excelDateToStr(val) {
+  if (!val) return '';
+  if (val instanceof Date) return val.toISOString().split('T')[0];
+  if (typeof val === 'number') {
+    const date = XLSX.SSF.parse_date_code(val);
+    if (date) return `${date.y}-${String(date.m).padStart(2,'0')}-${String(date.d).padStart(2,'0')}`;
+  }
+  return String(val).trim();
+}
+
+function readExcel(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array', cellDates: false });
+      const sheetName = wb.SheetNames.find(s => s.includes('確認書') || s.includes('見積')) || wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+      let headerRow = -1, dataStart = -1, dataEnd = data.length;
+      for (let i = 0; i < data.length; i++) {
+        if (/審査員交通費/.test(data[i].map(c => String(c||'')).join(''))) {
+          for (let j = i+1; j < Math.min(i+5, data.length); j++) {
+            if (data[j].map(c => String(c||'')).some(c => /出発日|起点/.test(c))) { headerRow = j; dataStart = j+1; break; }
+          }
+          for (let j = dataStart; j < data.length; j++) {
+            if (/合計|宿泊費/.test(data[j].map(c => String(c||'')).join('')) && j > dataStart) { dataEnd = j; break; }
+          }
+          break;
+        }
+      }
+      if (headerRow < 0) { showAlert('alert2','「審査員交通費」セクションが見つかりませんでした。','error'); return; }
+      const headers = data[headerRow].map(c => String(c||'').replace(/\n/g,''));
+      const colDate = headers.findIndex(h => /出発日/.test(h));
+      const colFrom = headers.findIndex(h => /起点|出発地/.test(h));
+      const colTo = headers.findIndex(h => /着点|目的地|到着/.test(h));
+      const colAmt = headers.findIndex(h => /金額/.test(h));
+      const colRt = headers.findIndex(h => /片道|往復/.test(h));
+      const colPurp = headers.findIndex(h => /目的/.test(h));
+      const rows = [];
+      for (let i = dataStart; i < dataEnd; i++) {
+        const row = data[i];
+        if (!row || row.every(c => !c)) continue;
+        const amt = parseFloat(String(row[colAmt]||'').replace(/[^\d.]/g,''));
+        if (!amt || isNaN(amt)) continue;
+        rows.push({ date: excelDateToStr(row[colDate]), from: String(row[colFrom]||'').trim(), to: String(row[colTo]||'').trim(), amount: amt, rt: String(row[colRt]||'片道').trim(), purpose: String(row[colPurp]||'エコアクション21審査').trim() || 'エコアクション21審査' });
+      }
+      if (!rows.length) { showAlert('alert2','交通費データが見つかりませんでした。','error'); return; }
+      excelRows = rows;
+      document.getElementById('excel-tbody').innerHTML = excelRows.map((r,i) => `<tr>
+        <td class="check-col"><input type="checkbox" class="row-check" data-i="${i}" checked></td>
+        <td style="white-space:nowrap">${r.date}</td><td>${r.from}</td><td>${r.to}</td><td>${r.rt}</td>
+        <td>¥${Number(r.amount).toLocaleString()}</td>
+        <td style="color:#666;font-size:12px">${r.purpose}</td>
+      </tr>`).join('');
+      document.getElementById('excel-preview').style.display = 'block';
+    } catch(err) { showAlert('alert2','読み取りエラー: ' + err.message, 'error'); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function toggleAll(cb) { document.querySelectorAll('.row-check').forEach(c => c.checked = cb.checked); }
+
+async function importSelected() {
+  const checked = [...document.querySelectorAll('.row-check')].filter(c => c.checked).map(c => parseInt(c.dataset.i));
+  if (!checked.length) { showAlert('alert2','行を選択してください','error'); return; }
+  showAlert('alert2','保存中...','success');
+  for (const i of checked) {
+    const r = excelRows[i];
+    await saveToSheets({ date: r.date, from: r.from, to: r.to, purpose: 'エコアクション21審査', transport: 'JR', fare: r.amount, rt: r.rt === '往復' ? 2 : 1, total: r.amount * (r.rt === '往復' ? 2 : 1) });
+  }
+  await loadFromSheets();
+  showAlert('alert2', `${checked.length}件を保存しました！`, 'success');
+  clearExcel();
+}
+
+function clearExcel() {
+  document.getElementById('excel-preview').style.display = 'none';
+  document.getElementById('excel-file').value = '';
+  excelRows = [];
+}
+
+function exportCSV() {
+  if (!records.length) { showAlert('alert','記録がありません','error'); return; }
+  const header = ['取引日','勘定科目','取引先','金額（税込）','税区分','摘要'];
+  const rows = records.map(r => [r.date,'旅費交通費','',r.total,'課税仕入10%',`${r.from}→${r.to}（${r.transport}）${r.purpose}`]);
+  const csv = '\uFEFF' + [header,...rows].map(row => row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
+  a.download = 'kotsuhi_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+}
+</script>
+</body>
+</html>
